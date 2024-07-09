@@ -1,0 +1,46 @@
+IS_DEBUG: true
+NUM_DEBUG_ROWS: 80
+SKIP_BOX_THR: 0.01
+IOU_THR: 0.3333
+TEST_CSV_PATH: data/test.csv
+SUB_CSV_SAVE_PATH: data/submission.csv
+LOGGING_CONFIG_YAML_PATH: ./logging.yaml
+
+LABEL_DICT:
+    Lead: 0
+    Position: 1
+    Claim: 2
+    Evidence: 3
+    Counterclaim: 4
+    Rebuttal: 5
+    Concluding Statement: 6
+
+MIN_LEN_THRESH_FOR_WBF:
+    Lead: 3
+    Position: 4
+    Evidence: 4
+    Claim: 2
+    Concluding Statement: 9
+    Counterclaim: 5
+    Rebuttal: 2
+
+MODEL_PARAMS:
+    -   model_name: models/db3s_mxl128
+        strict: false
+        use_position_embeddings: false
+        batch_size: 2
+        maxlen: 64
+        stride: 64
+        num_workers: 2
+        weight: 1.0
+        model_paths:
+            - models/db3s_mxl128/fprize_microsoft_deberta-v3-small_fold0_epoch_00_iov_v2_val_0.0000_20240626021016.pth
+
+PROBA_THRESH_FOR_WBF:
+    Lead: 0.27
+    Position: 0.28
+    Evidence: 0.39
+    Claim: 0.3
+    Concluding Statement: 0.36
+    Counterclaim: 0.21
+    Rebuttal: 0.2
