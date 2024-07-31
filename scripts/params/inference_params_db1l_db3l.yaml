@@ -25,7 +25,7 @@ MIN_LEN_THRESH_FOR_WBF:
     Rebuttal: 2
 
 MODEL_PARAMS:
-    -   model_name: models/db3l_xml1024
+    -   model_name: models/db3l_mxl1024
         strict: false
         use_position_embeddings: false
         batch_size: 80
@@ -34,9 +34,9 @@ MODEL_PARAMS:
         num_workers: 2
         weight: 0.50
         model_paths:
-            - models/db3l_xml1024/db3l_fold1_epoch_04_iov_v2_val_0.6948_20240501031626.pth
+            - models/db3l_mxl1024/db3l_fold1_epoch_04_iov_v2_val_0.6948_20240501031626.pth
 
-    -   model_name: models/db1l_xml1024
+    -   model_name: models/db1l_mxl1024
         strict: false
         use_position_embeddings: false
         batch_size: 80
@@ -45,7 +45,7 @@ MODEL_PARAMS:
         num_workers: 2
         weight: 0.50
         model_paths:
-            - models/db1l_xml1024/db1l_fold0_epoch_01_iov_v2_val_0.6915_20240430234400.pth
+            - models/db1l_mxl1024/db1l_fold0_epoch_01_iov_v2_val_0.6915_20240430234400.pth
 
 PROBA_THRESH_FOR_WBF:
     Lead: 0.27
