@@ -13,7 +13,7 @@ handlers:
         class: logging.FileHandler
         level: INFO
         formatter: simple
-        filename: 'logs.txt'
+        filename: null # Path (Absolute or Relative) to where logs.txt should be saved, will set to "logs.txt" if not provided
 loggers:
     raterLogger:
         level: INFO

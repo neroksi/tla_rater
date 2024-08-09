@@ -140,3 +140,6 @@ credent*.txt
 *.zip
 *.tar
 *.gz
+.vscode/
+/logs.txt
+/log.txt

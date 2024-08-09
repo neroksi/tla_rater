@@ -43,7 +43,7 @@ class InfConfig:
 
     TEST_CSV_PATH: str = "data/test.csv"
     SUB_CSV_SAVE_PATH: str = "data/submission.csv"
-    LOGGING_CONFIG_YAML_PATH = "./logging.yaml"
+    LOGS_TXT_PATH = configs.LOGS_TXT_PATH
 
     MIN_LEN_THRESH_FOR_WBF = {  # minimum length for each detected class-span
         "Lead": 3,
@@ -194,8 +194,8 @@ def predict_from_params_list(
         )
 
         # The final segmentation has two components:
-        # the first component is the predicted one ==> weighted 0.6
-        # the second compontent is derived from class-predictions ==> weighted 0.4
+        # the first component is from direct segments predictions ==> weighted 0.6
+        # the second compontent is from class predictions ==> weighted 0.4
         preds_seg = 0.60 * preds_seg + 0.40 * get_seg_from_ner(preds)
 
         subs.append(
@@ -267,7 +267,6 @@ def get_row_eff_score(
     uuids_map: a dict that maps each essay_id to its integer rank according to the Pytorch dataset order.
     """
     eff = (
-        # preds_eff.loc[uuids_map[row["id"]]][row["start"] : (row["end"] - 1)]
         preds_eff[uuids_map[row["id"]]]
         .loc[row["start"] : (row["end"] - 1)]
         .mean()
@@ -389,6 +388,7 @@ def finalize_subs(
     # ]
 
     # _, eff = get_df_eff_score(df=sub, preds_eff=preds_eff, uuids_map=uuids_map)
+
     eff = mp_get_eff_score(df=sub, preds_eff=preds_eff, uuids_map=uuids_map)
 
     sub[["score_discourse_effectiveness_0", "score_discourse_effectiveness_1"]] = eff
@@ -398,7 +398,7 @@ def finalize_subs(
 
 def predict(
     config_yaml_path: Union[str, Path] = None,
-    eff_bin_th: float = 0.40,
+    eff_bin_th: float | None = 0.40,
     use_dummy_eff: bool = False,
     ensure_complement: bool = True,
     fp16: bool = False,
@@ -406,15 +406,18 @@ def predict(
     """
     Predict the final outputs using provided parameters in config_yaml_path.
 
+    Please set eff_bin_th to None for raw efficiency scores (no binarization).
+
     Parameters
     ----------
 
     config_yaml_path: str Path-like
         YAML config file containing everything
-    eff_bin_th: float, (0, 1)
+    eff_bin_th: float or None, (0, 1)
         A threshold used to binarize the efficiency score, **score_discourse_effectiveness_0** will be set
         to **0.99** for all its values higher than this threshold and 0.01 otherwise, then **score_discourse_effectiveness_1**
         will be set to **1 - score_discourse_effectiveness_0** by complementarity.
+        Please set eff_bin_th to None for raw efficiency scores (no binarization).
 
     use_dummy_eff: bool, default=False
         Wether to simply ignore all the efficiency score predictions or not. If set to True, then **score_discourse_effectiveness_0** will be set to
@@ -431,8 +434,10 @@ def predict(
 
     read_and_set_config(config_yaml_path, cfg=InfConfig)
 
-    configs.LOGGING_CONFIG_YAML_PATH = InfConfig.LOGGING_CONFIG_YAML_PATH
+    configs.LOGS_TXT_PATH = InfConfig.LOGS_TXT_PATH
     configs.DEVICE = InfConfig.DEVICE
+
+    configs.init_config()
 
     assert eff_bin_th is None or not use_dummy_eff
 
@@ -484,6 +489,8 @@ def predict(
             "discourse_type",
         ]
     ].to_csv(InfConfig.SUB_CSV_SAVE_PATH, index=False)
+
+    logger.info(f"Prediction CSV File Saved at: ``{InfConfig.SUB_CSV_SAVE_PATH}``")
 
     duration = int((time.time() - T0))
 

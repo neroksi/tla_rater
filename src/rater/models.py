@@ -639,12 +639,12 @@ class NERSegmentationLoss(nn.Module):
             seg_labels[bools],
         )
 
-        # N ~= product(B, M, T) - Excluded Tokens (target < 0)
+        # let N == product(B, M, T) minus Number of Excluded Tokens (ie target < 0)
 
         l_ner = ner_loss(out_ner, target)  # => Nx15, N
         l_seg = seg_loss(out_seg, seg_labels)  # => Nx3, N
 
-        # R ~= product(B, M, T) - Excluded Tokens (eff_target < 0)
+        # let R == product(B, M, T) - number of Excluded Tokens (ie eff_target < 0)
         eff_bools = eff_target >= 0
         l_eff = eff_loss(out_eff[eff_bools], eff_target[eff_bools])  # => Rx2, R
 

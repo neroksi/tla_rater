@@ -47,7 +47,7 @@ TRAIN_ROOT: data/essays/ # Where to find train essay texts ?
 TRAIN_CSV_PATH: data/train_v2.csv
 FOLD_JSON_PATH: data/fold_dict.json
 MODEL_ROOT: models/
-LOGGING_CONFIG_YAML_PATH: ./logging.yaml
+LOGS_TXT_PATH: logs.txt
 
 # Efficient Data Usage Strategy
 P_MASK_FREQ: 0.90

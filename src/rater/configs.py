@@ -48,6 +48,8 @@ FOLD_JSON_PATH = DATA_ROOT / "fold_dict.json"
 MODEL_ROOT = PROJECT_ROOT / "models"
 LOGGING_CONFIG_YAML_PATH = PROJECT_ROOT / "logging.yaml"
 
+LOGS_TXT_PATH = "logs.txt"
+
 
 # Modeling & Training
 MODEL_NAME = "roberta-base"
@@ -152,14 +154,21 @@ def init_config():
 
     SEG_CLASS_WEIGHTS = 3 * np.array([0.35, 0.25, 0.40], dtype=np.float32)
 
-    with LOGGING_CONFIG_YAML_PATH.open("r") as f:
+    with open(LOGGING_CONFIG_YAML_PATH, "r") as f:
         logging_config = yaml.load(f, Loader=yaml.FullLoader)
-        logging_config["handlers"]["file"]["filename"] = str(
-            (DATA_ROOT / logging_config["handlers"]["file"]["filename"]).resolve()
-        )
+
+    if not logging_config["handlers"]["file"]["filename"]:
+        logging_config["handlers"]["file"]["filename"] = LOGS_TXT_PATH
+
+    logging_config["handlers"]["file"]["filename"] = str(
+        Path(logging_config["handlers"]["file"]["filename"]).resolve().absolute()
+    )
 
     lg_cfg.dictConfig(logging_config)
     logger = logging.getLogger("raterLogger")
 
 
-init_config()
+try:
+    init_config()
+except Exception as e:
+    print(f"INIT ERROR: {e}")

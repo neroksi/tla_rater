@@ -169,6 +169,7 @@ def gen_data_from_ids(
     tokenizer: object,
     root: str = None,
     texts: Dict[str, str] = None,
+    cfg_params: Dict[str, Any] = None,
 ) -> Dict[str, Any]:
     """
     Generates data from a list of UUIDs by processing each UUID individually.
@@ -191,6 +192,8 @@ def gen_data_from_ids(
     Dict[str, Any]
         Dictionary with UUIDs as keys and processed data as values.
     """
+
+    copy_param_to_configs(cfg_params, cfg=cfg)
 
     # Group dataframe by 'id' if df is provided, otherwise use an empty dictionary
     df_dict = {} if df is None else dict(list(df.groupby("id")))
@@ -243,6 +246,7 @@ def mp_gen_data(
     """
     T0 = time.time()
     N_CPU = cpu_count()  # Number of CPUs available
+    cfg_params = get_config_as_param(cfg)
 
     # Split UUIDs into sublists for each CPU
     uuids_list = [[] for _ in range(N_CPU)]
@@ -259,6 +263,7 @@ def mp_gen_data(
             tokenizer=tokenizer,
             root=root,
             texts=None if texts is None else {uuid: texts[uuid] for uuid in uuids_},
+            cfg_params=cfg_params,
         )
         for uuids_ in uuids_list
         if len(uuids_)

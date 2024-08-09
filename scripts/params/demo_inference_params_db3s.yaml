@@ -4,7 +4,7 @@ SKIP_BOX_THR: 0.01
 IOU_THR: 0.3333
 TEST_CSV_PATH: data/test.csv
 SUB_CSV_SAVE_PATH: data/submission.csv
-LOGGING_CONFIG_YAML_PATH: ./logging.yaml
+LOGS_TXT_PATH: logs.txt
 
 LABEL_DICT:
     Lead: 0

@@ -246,6 +246,7 @@ def predict_eval(
             preds, preds_seg = preds.softmax(dim=-1), preds_seg.softmax(dim=-1)
             preds_eff = preds_eff.softmax(dim=-1)
 
+        # the sequeeze(1) is useful to get rid of multi-sample dropout dim
         preds, preds_seg, preds_eff = (
             preds.squeeze(1).cpu().float().numpy(),
             preds_seg.squeeze(1).cpu().float().numpy(),
@@ -368,6 +369,7 @@ def predict_from_param(
     Tuple[np.ndarray, np.ndarray, np.ndarray, Optional[pd.DataFrame]]
         Predictions, segment predictions, efficiency predictions, and submission (if make_sub is True).
     """
+
     copy_param_to_configs(param)
 
     assert not oof or not make_sub
