@@ -40,16 +40,18 @@ FOLDS = [0, 1, 2, 3, 4]
 
 
 # Folders & Paths
+# fmt: off
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 DATA_ROOT = PROJECT_ROOT / "data"
-TRAIN_ROOT = DATA_ROOT / "essays"  # Where to find train essay texts ?
-TRAIN_CSV_PATH = DATA_ROOT / "train_v2.csv"
-FOLD_JSON_PATH = DATA_ROOT / "fold_dict.json"
-MODEL_ROOT = PROJECT_ROOT / "models"
-LOGGING_CONFIG_YAML_PATH = PROJECT_ROOT / "logging.yaml"
+TRAIN_ROOT = DATA_ROOT / "essays"  # full essay contents folder
+TRAIN_CSV_PATH = DATA_ROOT / "train_v2.csv" # training data csv file, in the correct format
+FOLD_JSON_PATH = DATA_ROOT / "fold_dict.json" # the folds, could be created using dataset.add_training_fold(...)
+MODEL_ROOT = PROJECT_ROOT / "models" # model checkpointing root folder
+LOGGING_CONFIG_YAML_PATH = PROJECT_ROOT / "logging.yaml" # python logger configuration yaml
 
-LOGS_TXT_PATH = "logs.txt"
+LOGS_TXT_PATH = "logs.txt" # the logging file, will contain log messages
 
+# fmt: on
 
 # Modeling & Training
 MODEL_NAME = "roberta-base"
@@ -58,10 +60,10 @@ NUM_INTERVAL = 2
 NUM_TARGETS = 1 + NUM_PURE_TARGETS * NUM_INTERVAL
 MAXLEN = 512
 
-CLASS_WEIGHTS: list = None
-SEG_CLASS_WEIGHTS: list = None
+CLASS_WEIGHTS: list = None  # will be set in init_config()
+SEG_CLASS_WEIGHTS: list = None  # will be set in init_config()
 
-USE_AMP = True
+USE_AMP = True  # Enable AMP for fast fp16 training ?
 EPOCHS = 5
 
 DEVICE = torch.device("cpu")
@@ -86,9 +88,9 @@ OPTIMIZER_LR = 5e-6
 OPTIMIZER_WEIGHT_DECAY = 0.01  # 1e-5
 SCHEDULER_ETA_MIN = 8e-7
 
-ALPHA_NER = 0.20
-ALPHA_SEG = 0.80
-ALPHA_EFF = 0.0
+ALPHA_NER = 0.20  # Weight of pure NER objective in loss computation
+ALPHA_SEG = 0.80  # Weight of pure SEGmentation objective in loss computation
+ALPHA_EFF = 0.0  # Weight of pure EFFectiveness objective in loss computation
 
 # Efficient Data Usage Strategy
 P_MASK_SIZE_LOW = 0.15

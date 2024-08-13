@@ -1205,7 +1205,7 @@ def collate_fn(
 
 
 def collate_fn_train(
-    inputs: Tuple[Tuple[List[int], List[int], List[int], List[int], List[int]]],
+    inputs: List[Tuple[List[int], List[int], List[int], List[int], List[int]]],
     pad_token_id: int,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """

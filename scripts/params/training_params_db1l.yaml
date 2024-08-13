@@ -43,11 +43,11 @@ FOLDS:
 
 # Folders
 DATA_ROOT: data/
-TRAIN_ROOT: data/essays/ # Where to find train essay texts ?
-TRAIN_CSV_PATH: data/train_v2.csv
-FOLD_JSON_PATH: data/fold_dict.json
-MODEL_ROOT: models/
-LOGS_TXT_PATH: logs.txt
+TRAIN_ROOT: data/essays/ # full essay contents folder
+TRAIN_CSV_PATH: data/train_v2.csv # training data csv file, in the correct format
+FOLD_JSON_PATH: data/fold_dict.json # the folds, could be created using dataset.add_training_fold(...)
+MODEL_ROOT: models/  # model checkpointing root folder
+LOGS_TXT_PATH: logs.txt # the logging file, will contain log messages
 
 # Efficient Data Usage Strategy
 P_MASK_FREQ: 0.90
