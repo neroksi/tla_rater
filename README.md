@@ -5,7 +5,7 @@ This repo contains Kkiller's first place solution for the ***RATER Challenge***,
 Technically, our approach is based on a three-headed Microsoft **Deberta** model variants for token classification (more on this later).
 
 
-## <a name="gen_notes"></a> 0. General notes
+## <a name="gnotes"></a> 0. General notes
 * All path specifications are either absolute, either relative to the project root foolder
 * Organizer's required scripts are in [scripts](/scripts/) folder
 * It's highly recommended to execute the scripts from  the project root folder
@@ -64,7 +64,7 @@ All experiments were conducted using Python version 3.10.12. Model training was 
 Depending on the GPU, the batch size and maximum sequence length varied, the batch size ranging from 2 to 6 while the maximum sequence length could range from 768 to 1024. Consequently, the training time per epoch ranged from 1 hour 30 minutes to 3 hours. During the final week of the competition, we also leveraged GPU servers provided by Learning Agency Lab to enhance the reproducibility of our results.
 
 ### 1.2. Installing Our project using setup-tools
-Make sure Python (3.10.12) is correctly installed and that the correct virtual environment (if any) is activated (see the below sections about Python installation). Then make sure the project is organized as above ([section 0.](#gen_notes)) and that critical files are not missing. Only then, you can install the project running (from  the project root):
+Make sure Python (3.10.12) is correctly installed and that the correct virtual environment (if any) is activated (see the below sections about Python installation). Then make sure the project is organized as above (see [general notes](#gnotes)) and that critical files are not missing. Only then, you can install the project running (from  the project root):
 
 ````bash
 pip install -e .
@@ -78,7 +78,7 @@ pip install -e path/to/the/project/
 
 
 ## 2. <a name="inference"></a> Inference: Making Predictions with Our Model
-All the necessary scripts for making predictions can be found in scripts/inference_script.py. The `inference_script.predict(...)` is surely what you need.
+All the necessary scripts for making predictions can be found in [inference_script.py](/scripts/inference_script.py). The [inference_script.predict(...)](/scripts/inference_script.py) is surely what you need.
 
 For convenience, we have also provided a command-line feature to make predictions based on a well defined **YAML configuration file** (see [params](/scritps/params/)). Having the good yaml config file in hand, just run the following command to get your predictions:
 
@@ -86,11 +86,11 @@ For convenience, we have also provided a command-line feature to make prediction
 python scripts/inference_script.py --config_yaml_path scripts/params/demo_inference_params_db3s.yaml
 ````
 
-In the above command, we're using  `demo_inference_params_db3s.yaml` as config file. This file is configured to use a lightweight model on a tiny subset of the test set for a quick demo. For full inference on the entire test set, please use ``inference_params_db1l_db3l.yaml`` instead. Running inference on the whole test set should take approximately 25 minutes (on a 50 GB A6000 GPU).
+In the above command, we're using [demo_inference_params_db3s.yaml](/scripts/params/inference_params_db1l_db3l.yaml) as config file. This file is configured to use a lightweight model on a tiny subset of the test set for a quick demo. For full inference on the entire test set, please use [inference_params_db1l_db3l.yaml](/scripts/params/inference_params_db1l_db3l.yaml) instead. Running inference on the whole test set should take approximately 25 minutes on a 50 GB A6000 GPU. If any issue (FileNotFound, CudaMemoryOverflow, ...), adjust the corresponding params in the config file (batch_size, file paths ...).
 
 The program should read the ``test.csv`` file from `$TEST_CSV_PATH` and save the predictions to `$SUB_CSV_SAVE_PATH`. For a real inference, please replace the demo yaml config by the right one (eg: [inference_params_db1l_db3l.yaml](/scripts/params/inference_params_db1l_db3l.yaml))
 
-**Notes:** Only two weights are used for the final inference : fold zero for ``deberta-v1-large`` and fold one for ``deberta-v3-large``. See instructins in the **training** section to reproduce these weights.
+**Notes:** Only two weights are used for the final inference : fold zero for ``deberta-v1-large`` and fold one for ``deberta-v3-large``. See instructins in the [training section](#training) to reproduce these weights.
 
 
 ## 3. <a name="training"></a> Running the Training Script
@@ -124,11 +124,11 @@ Our models are designed to predict three specific items, as illustrated in the d
 * The token segmentation mask
 * The token-level effectiveness score	
 
- ![Modeling Diagram](./docs/ModelingDiagram.png "Modeling Diagram")
+ ![Modeling Diagram](/docs/ModelingDiagram.png "Modeling Diagram")
 
-Each of our models is a three-headed architecture, with each head dedicated to one of the tasks mentioned above (see next section for more details). We utilize a cross-entropy loss function (potentially with dynamic class weights) for each task, and our final loss is a weighted sum of these individual losses. This modeling strategy not only comprehensively addresses all aspects of the competition but also offers the advantage of being fully trainable in a single step. This approach mitigates the typical error propagation risks associated with multi-step training methods.
+Each of our models is based on a three-headed architecture, with each head dedicated to one of the tasks mentioned above (see [next section for more details](#3headed)). We utilize a cross-entropy loss function (*potentially with dynamic class weights*) for each task, and our final loss is a weighted sum of these individual losses. This modeling strategy not only comprehensively addresses all aspects of the competition but also offers the advantage of being fully trainable in a single step. This approach mitigates the typical error propagation risks associated with multi-step training methods.
 
-It is important to note that minimal post-processing has been applied to the raw outputs, except for the effectiveness scores. This indicates potential for further improvements, as previous competitions (such as the Feedback Prize) have demonstrated the efficacy of gradient boosting for post-processing.
+It is important to note that some post-processing has been applied to the raw outputs in order to obtain a compliant output format. However, no second-step model is used, nor any stacking strategy. This indicates potential for further improvements, as previous FeedBack Prize competitions have demonstrated the usefulness of gradient boosting as a second-step post-processing model.
 
 Finally, we have employed various techniques to achieve faster and more effective model convergence, including:
 
@@ -144,27 +144,29 @@ Finally, we have employed various techniques to achieve faster and more effectiv
 These techniques collectively enhance the performance and efficiency of our models. For more details on each of these techniques, please see the points below.
 
 
-### 4.1. Three-headed deberta architecture
+### 4.1. <a name="3headed"></a> Three-headed deberta architecture
 #### 4.1.0. DeBERTa architecture
-DeBERTa is a now old transformer architecture introduced in 2020 by He & Al in [DeBERTa: Decoding-enhanced BERT with Disentangled Attention](https://arxiv.org/abs/2006.03654). It mainly introduces a *disentangled attention mechanism, where each word is represented using two vectors that encode its content and position, respectively, and the attention weights among words are computed using disentangled matrices on their contents and relative positions*. DeBERTa usually perform better than BERT and its variants like RoBERTa. While several implementations of the DeBERTa architecture are available accross the Web, we use here the one from [HuggingFace](https://huggingface.co/docs/transformers/model_doc/deberta). This will be the backbone of our models, on top of which we'll put 3 classification heads.
+DeBERTa is a now old transformer architecture introduced in 2020 by He & Al in [DeBERTa: Decoding-enhanced BERT with Disentangled Attention](https://arxiv.org/abs/2006.03654). It mainly introduces a *disentangled attention mechanism, where each word is represented using two vectors that encode its content and position, respectively, and the attention weights among words are computed using disentangled matrices on their contents and relative positions*. DeBERTa usually perform better than BERT and its variants like RoBERTa. While several implementations of the DeBERTa architecture are available accross the Web, we use here the one from [HuggingFace](https://huggingface.co/docs/transformers/model_doc/deberta). This will be the backbone of our models, on top of which we'll put three classification heads.
 
-Generally, inputs of the model wil be a batch of texts. Let assume ***B*** is the batch-size (ie the number of input texts), we will transform each text input into a list of the so called `tokens`. A token is just a sub-word that helps in encoding the textual input into a numerical one. For faster computation, shorter inputs are padded using the `padding_token` and the **tokenized** inputs will finally be a tensor of shape **BxT**. These tokens will be  fed into the DeBERTa model, leading to a **BxTxD** embeddings where **D** is the embedding dimension of the DeBERTa model (D=768 for the small version, D=1024 for the large one). Finally, these **BxTxD** embeddings will pass through the dedicated classification heads in order to have the final scores.
+Generally, inputs of the model wil be a batch of texts. Let assume ***B*** is the batch-size (ie the number of input texts), we will transform each text input into a list of the so called `tokens`. A token is just a sub-word that helps in encoding the textual input into a numerical one. For faster computation, shorter inputs are padded using the `padding_token` and the **tokenized** inputs will finally be a tensor of shape ***BxT***. These tokens will be  fed into the DeBERTa model, leading to a ***BxTxD*** embeddings where ***D*** is the embedding dimension of the DeBERTa model (D=768 for the small version, D=1024 for the large one). Finally, these ***BxTxD*** embeddings will pass through the dedicated classification heads in order to have the final scores.
 
-**NOTES** : Due to the use of the multi-sample dropout, which is a technique to make convergence faster, an additional dimension should be added to he above tensors : instead of B ==> BxT ==> BxTxD, we will have B ==> BxT ==> BxMxTxD, where M is the number of different dropout rates. Please see `models.Model.forward()` for the real implementation.
+**NOTES** : Due to the use of the multi-sample dropout, which is a technique to make convergence faster, an additional dimension should be added to he above tensors : instead of B ==> BxT ==> BxTxD, we will have B ==> BxT ==> BxMxTxD, where M is the number of different dropout rates. Please see [models.Model.forward()](/src/rater/models.py#L431) for the real implementation.
 
 ### 4.1.1. Token-level Class Prediction
 The primary task of this challenge is to classify each segment of an essay into one of the seven provided categories, effectively extending this classification to the token level. This approach aligns with a Token Classification task, commonly referred to as **Named Entity Recognition (NER)**.
 
 To achieve this, we employ a classification head atop the DeBERTa model. This `linear layer` produces 15 distinct scores:
 
-* Scores 1 to 7: Correspond to the Beginning of each entity type (B-Claim, B-ConcludingStatement, B-Counterclaim, B-Evidence, B-Lead, B-Position, B-Rebuttal).
-* Scores 8 to 14: Correspond to the Inside of each entity type (I-Claim, I-ConcludingStatement, I-Counterclaim, I-Evidence, I-Lead, I-Position, I-Rebuttal).
+* Scores 1 to 7: Correspond to the Beginning of each entity type: B-Claim, B-ConcludingStatement, B-Counterclaim, B-Evidence, B-Lead, B-Position, B-Rebuttal.
+* Scores 8 to 14: Correspond to the Inside of each entity type: I-Claim, I-ConcludingStatement, I-Counterclaim, I-Evidence, I-Lead, I-Position, I-Rebuttal.
 * Score 15: Represents tokens outside of any entity.
 
 This setup follows the [IOB format](https://en.wikipedia.org/wiki/Inside%E2%80%93outside%E2%80%93beginning_(tagging)).
 
+To see the real implementation, please refer to [models.Model.forward()#NER](/src/rater/models.py#L475).
+
 #### 4.1.2. Token-Level Segmentation Mask
-Text segmentation is one of the key part of this challenge. While segmentation output can be directly derived from the above **NER** approach, we decided to incorporate a dedicated segmentation head into our model for better and more reliabel segmentation. The segmentation head is a simple linear layer and outputs 3 scores:
+Text segmentation is one of the key part of this challenge. While segmentation output can be directly derived from the above **NER** approach, we decided to incorporate a dedicated segmentation head into our model for better and more reliable segmentation. The segmentation head is a simple linear layer and outputs 3 scores:
 
 * 1st score ==> At the beginning of any Entity
 * 2nd score ==> Inside an Entity
@@ -172,8 +174,25 @@ Text segmentation is one of the key part of this challenge. While segmentation o
 
 The target for this task if consequently directly computed from the NER target.
 
-#### 4.1.3. Token-level Effectiveness Score
-Effectiveness score is the third and last part of this challenge. We handle it by simply adding a third linear head, outputing 2 scores to our DeBERTa model.
+To see the real implementation, please refer to [models.Model.forward()#SEG](/src/rater/models.py#L474).
+
+**NOTES**:  In our final submission, this head contributes to 60% of the final segmention output while the NER head contribution is 40%.
+
+#### 4.1.3. <a name="eff_score"></a> Token-level Effectiveness Score
+Effectiveness score is the third and last part of this challenge. We handle it by simply adding a third linear head which outputs 2 scores.
+
+To see the real implementation, please refer to [models.Model.forward()#EFF](/src/rater/models.py#L476).
+
+**NOTES**: In our final submission, there is an option to make the effectiveness scores discrete. This can be seen in as below:
+
+````python
+if eff_bin_th is not None:
+    bools = sub["score_discourse_effectiveness_0"] > eff_bin_th
+    sub.loc[bools, "score_discourse_effectiveness_0"] = 0.99
+    sub.loc[~bools, "score_discourse_effectiveness_0"] = 0.01
+````
+
+Basically, if ``eff_bin_th``is provided (not ``None``), then all values above this threshold will be set to 0.99 and those below will be set to  0.01. If one just prefers to have raw Effectiveness Scores, just set ``eff_bin_th``  to ``null`` in the YAML config file. 
 
 ### 4.2. Tokenizer Augmentation
 We enhanced the tokenizer to include special tokens such as <\n> and <\t>, allowing the model to better capture and understand newline and tab characters within text. This modification aids in preserving the original structure of the input data, leading to improved downstream task performance. The updated tokenizer is seamlessly integrated into the preprocessing pipeline to ensure consistency across training and inference phases.
