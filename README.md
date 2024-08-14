@@ -183,7 +183,7 @@ Effectiveness score is the third and last part of this challenge. We handle it b
 
 To see the real implementation, please refer to [models.Model.forward()#EFF](/src/rater/models.py#L476).
 
-**NOTES**: In our final submission, there is an option to make the effectiveness scores discrete. This can be seen in as below:
+**NOTES**: In our final submission, there is an option to make the effectiveness scores discrete. This can be seen in [inference_script.predict()](/scripts/inference_script.py#L458) as below:
 
 ````python
 if eff_bin_th is not None:
