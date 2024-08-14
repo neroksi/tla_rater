@@ -406,7 +406,7 @@ def predict(
     """
     Predict the final outputs using provided parameters in config_yaml_path.
 
-    Please set eff_bin_th to None for raw efficiency scores (no binarization).
+    Please set eff_bin_th to None for raw effectiveness scores (no binarization).
 
     Parameters
     ----------
@@ -414,13 +414,13 @@ def predict(
     config_yaml_path: str Path-like
         YAML config file containing everything
     eff_bin_th: float or None, (0, 1)
-        A threshold used to binarize the efficiency score, **score_discourse_effectiveness_0** will be set
+        A threshold used to binarize the effectiveness score, **score_discourse_effectiveness_0** will be set
         to **0.99** for all its values higher than this threshold and 0.01 otherwise, then **score_discourse_effectiveness_1**
         will be set to **1 - score_discourse_effectiveness_0** by complementarity.
-        Please set eff_bin_th to None for raw efficiency scores (no binarization).
+        Please set eff_bin_th to None for raw effectiveness scores (no binarization).
 
     use_dummy_eff: bool, default=False
-        Wether to simply ignore all the efficiency score predictions or not. If set to True, then **score_discourse_effectiveness_0** will be set to
+        Wether to simply ignore all the effectiveness score predictions or not. If set to True, then **score_discourse_effectiveness_0** will be set to
         0.99 and then   **score_discourse_effectiveness_1** will be set to **1 - score_discourse_effectiveness_0** by complementarity.
 
     ensure_complement: bool, default=True

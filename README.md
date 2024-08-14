@@ -192,7 +192,7 @@ if eff_bin_th is not None:
     sub.loc[~bools, "score_discourse_effectiveness_0"] = 0.01
 ````
 
-Basically, if ``eff_bin_th``is provided (not ``None``), then all values above this threshold will be set to 0.99 and those below will be set to  0.01. If one just prefers to have raw Effectiveness Scores, just set ``eff_bin_th``  to ``null`` in the YAML config file. 
+Basically, if ``eff_bin_th``is provided (not ``None``), then all values above this threshold will be set to 0.99 and those below will be set to  0.01. If one just prefers to have Raw Effectiveness Scores, then set ``eff_bin_th``  to ``null`` in the YAML config file. 
 
 ### 4.2. Tokenizer Augmentation
 We enhanced the tokenizer to include special tokens such as <\n> and <\t>, allowing the model to better capture and understand newline and tab characters within text. This modification aids in preserving the original structure of the input data, leading to improved downstream task performance. The updated tokenizer is seamlessly integrated into the preprocessing pipeline to ensure consistency across training and inference phases.
