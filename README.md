@@ -5,12 +5,12 @@ This repo contains Kkiller's first place solution for the ***RATER Challenge***,
 Technically, our approach is based on a three-headed Microsoft **Deberta** model variants for token classification (more on this later).
 
 
-## 0. General notes
+## <a name="gen_notes"></a> 0. General notes
 * All path specifications are either absolute, either relative to the project root foolder
-* Organizer's required scripts are in ``scripts/`` folder
+* Organizer's required scripts are in [scripts](/scripts/) folder
 * It's highly recommended to execute the scripts from  the project root folder
 * It's **highly recommended to organize the project as below** (even if each path can be parametrized in the YAML config file)
-* This project has been already tested against **Python 3.10.12**, use another version at your own risk
+* This project has been only tested against **Python 3.10.12**, use another version at your own risk
 
 The typical folder tree should look like :
 
@@ -23,8 +23,7 @@ The typical folder tree should look like :
 |       |-- fold_dict.json # the folds, could be created using dataset.add_training_fold(...)
 |       |-- submission.csv # not required
 |       |-- test.csv # the test set
-|       |-- train.csv # the training set
-|       |-- train_v2.csv # equivalent to train.csv but more convenient since
+|       |-- train_v2.csv # the training set
 |       `-- essays/ # full essay contents folder
 |           |-- id_01.txt
 |           |-- id_02.txt
@@ -65,7 +64,7 @@ All experiments were conducted using Python version 3.10.12. Model training was 
 Depending on the GPU, the batch size and maximum sequence length varied, the batch size ranging from 2 to 6 while the maximum sequence length could range from 768 to 1024. Consequently, the training time per epoch ranged from 1 hour 30 minutes to 3 hours. During the final week of the competition, we also leveraged GPU servers provided by Learning Agency Lab to enhance the reproducibility of our results.
 
 ### 1.2. Installing Our project using setup-tools
-Make sure Python (3.10.12) is correctly installed and that the correct virtual environment (if any) is activated (see the below sections about Python installation). Then make sure the project is organized as above (section 0.) and that critical files are not missing. Only then, you can install the project running (from  the project root):
+Make sure Python (3.10.12) is correctly installed and that the correct virtual environment (if any) is activated (see the below sections about Python installation). Then make sure the project is organized as above ([section 0.](#gen_notes)) and that critical files are not missing. Only then, you can install the project running (from  the project root):
 
 ````bash
 pip install -e .
@@ -78,10 +77,10 @@ pip install -e path/to/the/project/
 ````
 
 
-## 2. Inference: Making Predictions with Our Model
+## 2. <a name="inference"></a> Inference: Making Predictions with Our Model
 All the necessary scripts for making predictions can be found in scripts/inference_script.py. The `inference_script.predict(...)` is surely what you need.
 
-For convenience, we have also provided a commandline feature to make predictions based on a well defined **YAML configuration file** (see ``scritps/params/``). Having the good yaml config file in hand, just run the following command to get your predictions:
+For convenience, we have also provided a command-line feature to make predictions based on a well defined **YAML configuration file** (see [params](/scritps/params/)). Having the good yaml config file in hand, just run the following command to get your predictions:
 
 ````bash
 python scripts/inference_script.py --config_yaml_path scripts/params/demo_inference_params_db3s.yaml
@@ -89,13 +88,13 @@ python scripts/inference_script.py --config_yaml_path scripts/params/demo_infere
 
 In the above command, we're using  `demo_inference_params_db3s.yaml` as config file. This file is configured to use a lightweight model on a tiny subset of the test set for a quick demo. For full inference on the entire test set, please use ``inference_params_db1l_db3l.yaml`` instead. Running inference on the whole test set should take approximately 25 minutes (on a 50 GB A6000 GPU).
 
-The program should read the ``test.csv`` file from `$TEST_CSV_PATH` and save the predictions to `$SUB_CSV_SAVE_PATH`. For a real inference, please replace the demo yaml config by the right one (eg: `inference_params_db1l_db3l.yaml`)
+The program should read the ``test.csv`` file from `$TEST_CSV_PATH` and save the predictions to `$SUB_CSV_SAVE_PATH`. For a real inference, please replace the demo yaml config by the right one (eg: [inference_params_db1l_db3l.yaml](/scripts/params/inference_params_db1l_db3l.yaml))
 
 **Notes:** Only two weights are used for the final inference : fold zero for ``deberta-v1-large`` and fold one for ``deberta-v3-large``. See instructins in the **training** section to reproduce these weights.
 
 
-## 3. Running the Training Script
-Training is solely based on the provided data, no external data were used. However, for deberta-v1-large we initialize the model weights with old weights from Feedback Prize 2021. These old weights are the ones we used in our 5’th place solution. The old weights was publicly shared and [can be found here](https://www.kaggle.com/code/kneroma/gdrive-db1l-1024-v2-v11-no-pe-weights/output). The deberta-v3-large model was trained from scratch since no old weights were available to use. Given the good performance of the v3 models (after tokenizer tweaking), weight initialization should have limited impact.
+## 3. <a name="training"></a> Running the Training Script
+Training is solely based on the provided data, no external data were used. However, for deberta-v1-large we initialize the model weights with old weights from Feedback Prize 2021. These old weights are the ones we used in our 5’th place solution. The old weights was publicly shared and [can be found here](https://www.kaggle.com/code/kneroma/gdrive-db1l-1024-v2-v11-no-pe-weights/output). The deberta-v3-large model was trained from scratch since no old weights were available to use. Given the good performance of the v3 models (after tokenizer tweaking), weight initialization surely has a limited importance.
 
 To span a training session, just run:
 
@@ -118,7 +117,7 @@ python scripts/training_script.py  --config_yaml_path scripts/params/training_pa
 ````
 
 
-## 4. Modeling Approach
+## 4. <a name="modeling"></a> Modeling Approach
 Our models are designed to predict three specific items, as illustrated in the diagram below:
 
 * The token-level class
@@ -142,16 +141,16 @@ Finally, we have employed various techniques to achieve faster and more effectiv
 * Best weight checkpointing based on evaluation metrics
 * Mixed precision training
 
-These techniques collectively enhance the performance and efficiency of our models. For more details on each these techniques, please below point.
+These techniques collectively enhance the performance and efficiency of our models. For more details on each of these techniques, please see the points below.
 
 
 ### 4.1. Three-headed deberta architecture
 #### 4.1.0. DeBERTa architecture
 DeBERTa is a now old transformer architecture introduced in 2020 by He & Al in [DeBERTa: Decoding-enhanced BERT with Disentangled Attention](https://arxiv.org/abs/2006.03654). It mainly introduces a *disentangled attention mechanism, where each word is represented using two vectors that encode its content and position, respectively, and the attention weights among words are computed using disentangled matrices on their contents and relative positions*. DeBERTa usually perform better than BERT and its variants like RoBERTa. While several implementations of the DeBERTa architecture are available accross the Web, we use here the one from [HuggingFace](https://huggingface.co/docs/transformers/model_doc/deberta). This will be the backbone of our models, on top of which we'll put 3 classification heads.
 
-Generally, inputs of the model wil be a batch of texts. Let assume ***B*** is the batch-size (ie the number input texts), we will transform each text input into a list of the so called `tokens`. A token is just a sub-word and usually allow to encode the textual input into a numerical one. For faster computation, shorter inputs are padded using the `padding_token` and the **tokenized** inputs will finally be a tensor of shape **BxT**. This tokens will be  fed into the DeBERTa model, leading to a **BxTxD** embeddings where **D** is the embedding dimension of the DeBERTa model (D=768 for the small version, D=1024 for the large one). Finally, these **BxTxD** embeddings will pass through the dedicated classification heads in order to have the final scores.
+Generally, inputs of the model wil be a batch of texts. Let assume ***B*** is the batch-size (ie the number of input texts), we will transform each text input into a list of the so called `tokens`. A token is just a sub-word that helps in encoding the textual input into a numerical one. For faster computation, shorter inputs are padded using the `padding_token` and the **tokenized** inputs will finally be a tensor of shape **BxT**. These tokens will be  fed into the DeBERTa model, leading to a **BxTxD** embeddings where **D** is the embedding dimension of the DeBERTa model (D=768 for the small version, D=1024 for the large one). Finally, these **BxTxD** embeddings will pass through the dedicated classification heads in order to have the final scores.
 
-**NOTES** : Due to the use of the multi-sample dropout, which is a technique to make convergence faster, an additional dimension should be added to he above tensors : instead of B ==> BxT ==> BxTxD, we will have B ==> BxT ==> BxMxTxD, where M is the number of different dropout rates. Please see `models.Model.formward()` for the real implementation.
+**NOTES** : Due to the use of the multi-sample dropout, which is a technique to make convergence faster, an additional dimension should be added to he above tensors : instead of B ==> BxT ==> BxTxD, we will have B ==> BxT ==> BxMxTxD, where M is the number of different dropout rates. Please see `models.Model.forward()` for the real implementation.
 
 ### 4.1.1. Token-level Class Prediction
 The primary task of this challenge is to classify each segment of an essay into one of the seven provided categories, effectively extending this classification to the token level. This approach aligns with a Token Classification task, commonly referred to as **Named Entity Recognition (NER)**.
@@ -201,7 +200,7 @@ The training process includes a mechanism for saving the model's weights at chec
 Mixed precision training was adopted to accelerate training by utilizing both 16-bit and 32-bit floating-point types. This approach reduces memory consumption and speeds up computations without compromising model accuracy. The implementation leverages hardware accelerators and libraries optimized for mixed precision operations. All of this is done, of course, using Pytorch.
 
 
-## 5. PyEnv and Python 3.10.12 Installation
+## <a name="py-install"></a> 5. PyEnv and Python 3.10.12 Installation
 We run all our experiments under ***Python 3.10.12***, thus we highly recommend to run the scripts under this same settings even if they could (hopefully) work under a different environment. We also make use of `pyenv` for Virtual Environments management.
 
 First, ensure that all the system requirements are installed by doing (as `root` user or preprend `sudo` to each command):
@@ -219,8 +218,7 @@ apt-get install -y make build-essential libssl-dev zlib1g-dev \
 curl https://pyenv.run | bash
 ````
 
-* Then add PyEnv to your system PATH
-If  ABSENT from your system PATH, `pyenv` can be added by running:
+* Then add PyEnv to your system PATH if it's absent
 
 ````bash
 export PYENV_ROOT="$HOME/.pyenv"
@@ -246,3 +244,5 @@ pyenv virtualenv 3.10.12 rater
 ````bash
 pyenv activate rater
 ````
+
+**NOTES** : On Windows, ***conda*** envs could also be used, but no specific instructions will be provided here.
